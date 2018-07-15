@@ -10,7 +10,7 @@
 #define JOINT_MAX	 2.0f
 
 // Turn on velocity based control
-#define VELOCITY_CONTROL true
+#define VELOCITY_CONTROL false //true for Task 1
 #define VELOCITY_MIN -0.2f
 #define VELOCITY_MAX  0.2f
 
@@ -20,7 +20,7 @@
 #define ALLOW_RANDOM true
 #define DEBUG_DQN true
 #define GAMMA 0.9f
-#define EPS_START 0.9f
+#define EPS_START 0.7f //0.9f
 #define EPS_END 0.02f
 #define EPS_DECAY 200
 #define numActions 6 //default number of actions * 2 possible actions: + or -
@@ -32,12 +32,12 @@
 
 #define INPUT_WIDTH   64
 #define INPUT_HEIGHT  64
-#define OPTIMIZER "RMSprop"
-#define LEARNING_RATE 0.01f
+#define OPTIMIZER "Adam" //RMSprop for Task 1
+#define LEARNING_RATE 0.02f //0.01f
 #define REPLAY_MEMORY 10000
-#define BATCH_SIZE 32
+#define BATCH_SIZE 256 //32 for Task 1
 #define USE_LSTM true
-#define LSTM_SIZE 128
+#define LSTM_SIZE 256 //128 for Task 1
 
 /*
 / TODO - Define Reward Parameters
@@ -260,6 +260,7 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		*/
 		
 		// TASK 1
+		/*
 		if (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0)
 		{
 			rewardHistory = REWARD_WIN *50;
@@ -275,10 +276,10 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 			rewardHistory = REWARD_LOSS *5;
 			newReward  = true;
 			endEpisode = true;
-		}
+		}*/
 
 		// TASK 2 Setup
-		/*
+		
 		if (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0)
 		{
 			if ((strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0)) 
@@ -298,7 +299,7 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 				endEpisode = true;
 			}
 		}
-		*/
+		
 			
 		/*if (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0)
 		{
@@ -670,13 +671,14 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 			if( episodeFrames > 1 )
 			{
 				const float distDelta  = lastGoalDistance - distGoal;
-				const float alpha = 0.9f;
+				const float alpha = 0.4f; //0.9f Task 1
 
 				// compute the smoothed moving average of the delta of the distance to the goal
 				avgGoalDelta  = (avgGoalDelta * alpha) + (distDelta * (1 - alpha));
-				if(avgGoalDelta>0)
+				if(avgGoalDelta>0 || distGoal < 0.1)
 				{
-					rewardHistory = REWARD_WIN * avgGoalDelta;
+					//rewardHistory = REWARD_WIN * avgGoalDelta;
+					rewardHistory = (1 - pow(distGoal,0.4f));
 				}
 				else if (distGoal == 0)
 				{
